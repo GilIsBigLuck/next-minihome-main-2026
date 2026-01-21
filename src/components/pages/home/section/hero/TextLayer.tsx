@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef, useMemo } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useRef, useMemo, useEffect } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
 import { Text } from '@react-three/drei'
 import * as THREE from 'three'
 
@@ -15,6 +15,7 @@ interface TextConfig {
 interface TextLayerProps {
   text?: string
   fontSize?: number
+  isLoaded?: boolean
 }
 
 // easeInOutCubic
@@ -22,19 +23,32 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 }
 
-export function TextLayer({ text = 'mini', fontSize = 0.2 }: TextLayerProps) {
+export function TextLayer({ text = 'mini', fontSize = 0.2, isLoaded = false }: TextLayerProps) {
   const groupRef = useRef<THREE.Group>(null)
+  const { scene } = useThree()
   const animationRef = useRef({
     spread: 0,
-    phase: 'closed' as 'opening' | 'open' | 'closing' | 'closed',
+    phase: 'waiting' as 'waiting' | 'opening' | 'open' | 'closing' | 'closed',
     phaseTime: 0,
+    started: false,
   })
+
+  const whiteColor = useMemo(() => new THREE.Color('#ffffff'), [])
+  const blackColor = useMemo(() => new THREE.Color('#000000'), [])
+
+  // 로딩 완료되면 애니메이션 시작
+  useEffect(() => {
+    if (isLoaded && !animationRef.current.started) {
+      animationRef.current.started = true
+      animationRef.current.phase = 'closed'
+      animationRef.current.phaseTime = 0
+    }
+  }, [isLoaded])
 
   const ANIMATION_DURATION = 2.5 // 펼치기/접기 시간 (초)
   const DELAY_DURATION = 2 // 대기 시간 (초)
 
   const textConfigs = useMemo<TextConfig[]>(() => {
-    // index 0 포함 (뒤에 있을 때 왜곡 효과용)
     return Array.from({ length: TEXT_COUNT }, (_, index) => ({
       position: [0, 0, 0] as [number, number, number],
       color: HERO_COLORS[index % HERO_COLORS.length],
@@ -45,6 +59,10 @@ export function TextLayer({ text = 'mini', fontSize = 0.2 }: TextLayerProps) {
     if (!groupRef.current) return
 
     const anim = animationRef.current
+
+    // 로딩 전에는 대기
+    if (anim.phase === 'waiting') return
+
     anim.phaseTime += delta
 
     switch (anim.phase) {
@@ -76,9 +94,13 @@ export function TextLayer({ text = 'mini', fontSize = 0.2 }: TextLayerProps) {
         break
     }
 
+    // 배경색 변경: 펼쳐지면 검정, 접히면 하양
+    const bgColor = whiteColor.clone().lerp(blackColor, anim.spread)
+    scene.background = bgColor
+
     groupRef.current.children.forEach((child, index) => {
       if (index === 0) {
-        // 맨 앞 텍스트 (검정): 항상 맨 앞 (초기에도 약간 앞에)
+        // 맨 앞 텍스트: 항상 맨 앞
         child.position.set(0, 0, 0.01 + anim.spread * 0.5)
         return
       }
