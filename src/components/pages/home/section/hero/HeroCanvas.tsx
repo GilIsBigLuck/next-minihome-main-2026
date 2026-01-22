@@ -27,7 +27,7 @@ export function HeroCanvas({ isLoaded = false }: HeroCanvasProps) {
           pages={HERO_SCROLL.pages}
           distance={HERO_SCROLL.distance}
         >
-          <FilterLayer>
+          <FilterLayer isLoaded={isLoaded}>
             <TextLayer isLoaded={isLoaded} />
           </FilterLayer>
         </ScrollControls>

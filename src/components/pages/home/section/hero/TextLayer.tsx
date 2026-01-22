@@ -99,6 +99,20 @@ export function TextLayer({ text = 'mini', fontSize = 0.2, isLoaded = false }: T
     scene.background = bgColor
 
     groupRef.current.children.forEach((child, index) => {
+      if (child instanceof THREE.Group && child.children.length > 0) {
+        const textMesh = child.children[0] as THREE.Mesh
+        if (textMesh && textMesh.material) {
+          const material = textMesh.material as THREE.MeshBasicMaterial
+          if (index === 0) {
+            material.opacity = 1
+            material.transparent = false
+          } else {
+            material.opacity = 0.85
+            material.transparent = true
+          }
+        }
+      }
+
       if (index === 0) {
         // 맨 앞 텍스트: 항상 맨 앞
         child.position.set(0, 0, 0.01 + anim.spread * 0.5)
