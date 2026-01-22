@@ -7,6 +7,7 @@ import { ScrollControls, Preload } from '@react-three/drei'
 import { HERO_CAMERA, HERO_SCROLL } from '@/constants/three/hero.config'
 import { FilterLayer } from './FilterLayer'
 import { TextLayer } from './TextLayer'
+import { ProjectsSection } from './ProjectsSection'
 
 interface HeroCanvasProps {
   isLoaded?: boolean
@@ -27,9 +28,10 @@ export function HeroCanvas({ isLoaded = false }: HeroCanvasProps) {
           pages={HERO_SCROLL.pages}
           distance={HERO_SCROLL.distance}
         >
-          <FilterLayer isLoaded={isLoaded}>
+          <FilterLayer>
             <TextLayer isLoaded={isLoaded} />
           </FilterLayer>
+          <ProjectsSection />
         </ScrollControls>
         <Preload all />
       </Suspense>

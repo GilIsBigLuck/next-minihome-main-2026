@@ -37,7 +37,7 @@ export const HERO_CAMERA = {
 
 export const HERO_SCROLL = {
   damping: 0.2,
-  pages: 3,
+  pages: 5,
   distance: 0.5,
 } as const
 
