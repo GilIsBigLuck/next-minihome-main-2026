@@ -2,10 +2,10 @@
 
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Text, useScroll } from '@react-three/drei'
+import { Text } from '@react-three/drei'
 import * as THREE from 'three'
 
-import { HERO_COLORS, TEXT_COUNT, TEXT_FONT, HERO_ANIMATION } from '@/constants/three/hero.config'
+import { HERO_COLORS, TEXT_COUNT, TEXT_FONT } from '@/constants/three/hero.config'
 
 interface TextConfig {
   position: [number, number, number]
@@ -26,7 +26,6 @@ function easeInOutCubic(t: number): number {
 export function TextLayer({ text = 'mini', fontSize = 0.2, isLoaded = false }: TextLayerProps) {
   const groupRef = useRef<THREE.Group>(null)
   const { scene } = useThree()
-  const scroll = useScroll()
   const animationRef = useRef({
     spread: 0,
     phase: 'waiting' as 'waiting' | 'opening' | 'open' | 'closing' | 'closed',
@@ -35,7 +34,7 @@ export function TextLayer({ text = 'mini', fontSize = 0.2, isLoaded = false }: T
   })
 
   const whiteColor = useMemo(() => new THREE.Color('#ffffff'), [])
-  const grayColor = useMemo(() => new THREE.Color('#efefef'), [])
+  const blackColor = useMemo(() => new THREE.Color('#000000'), [])
 
   // 로딩 완료되면 애니메이션 시작
   useEffect(() => {
@@ -46,8 +45,8 @@ export function TextLayer({ text = 'mini', fontSize = 0.2, isLoaded = false }: T
     }
   }, [isLoaded])
 
-  const ANIMATION_DURATION = HERO_ANIMATION.duration
-  const DELAY_DURATION = HERO_ANIMATION.delay
+  const ANIMATION_DURATION = 2.5 // 펼치기/접기 시간 (초)
+  const DELAY_DURATION = 2 // 대기 시간 (초)
 
   const textConfigs = useMemo<TextConfig[]>(() => {
     return Array.from({ length: TEXT_COUNT }, (_, index) => ({
@@ -60,23 +59,43 @@ export function TextLayer({ text = 'mini', fontSize = 0.2, isLoaded = false }: T
     if (!groupRef.current) return
 
     const anim = animationRef.current
-    const scrollOffset = scroll.offset
 
-    // 스크롤에 따라 텍스트 위로 올라감
-    groupRef.current.position.y = scrollOffset * 2
+    // 로딩 전에는 대기
+    if (anim.phase === 'waiting') return
 
-    // 스크롤이 있으면 부드럽게 펼침
-    const lerpSpeed = 0.5 // 속도 조절
-    if (scrollOffset > 0.01) {
-      anim.spread += (1 - anim.spread) * lerpSpeed * delta
-    } else {
-      // 스크롤 최상단이면 접힘
-      anim.spread += (0 - anim.spread) * lerpSpeed * delta
-      if (anim.spread < 0.001) anim.spread = 0
+    anim.phaseTime += delta
+
+    switch (anim.phase) {
+      case 'opening':
+        anim.spread = easeInOutCubic(Math.min(anim.phaseTime / ANIMATION_DURATION, 1))
+        if (anim.phaseTime >= ANIMATION_DURATION) {
+          anim.phase = 'open'
+          anim.phaseTime = 0
+        }
+        break
+      case 'open':
+        if (anim.phaseTime >= DELAY_DURATION) {
+          anim.phase = 'closing'
+          anim.phaseTime = 0
+        }
+        break
+      case 'closing':
+        anim.spread = 1 - easeInOutCubic(Math.min(anim.phaseTime / ANIMATION_DURATION, 1))
+        if (anim.phaseTime >= ANIMATION_DURATION) {
+          anim.phase = 'closed'
+          anim.phaseTime = 0
+        }
+        break
+      case 'closed':
+        if (anim.phaseTime >= DELAY_DURATION) {
+          anim.phase = 'opening'
+          anim.phaseTime = 0
+        }
+        break
     }
 
-    // 배경색 변경: 스크롤에 따라 #efefef로
-    const bgColor = whiteColor.clone().lerp(grayColor, scrollOffset)
+    // 배경색 변경: 펼쳐지면 검정, 접히면 하양
+    const bgColor = whiteColor.clone().lerp(whiteColor, anim.spread)
     scene.background = bgColor
 
     groupRef.current.children.forEach((child, index) => {
@@ -84,32 +103,33 @@ export function TextLayer({ text = 'mini', fontSize = 0.2, isLoaded = false }: T
         const textMesh = child.children[0] as THREE.Mesh
         if (textMesh && textMesh.material) {
           const material = textMesh.material as THREE.MeshBasicMaterial
-          if (index === 0) {
-            material.opacity = 1
-            material.transparent = false
-          } else {
-            material.opacity = 0.85
-            material.transparent = true
-          }
+          // if (index === 0) {
+          //   material.opacity = 1
+          //   material.transparent = false
+          // } else {
+          //   material.opacity = 0.95
+          //   material.transparent = true
+        // }
         }
       }
 
       if (index === 0) {
         // 맨 앞 텍스트: 항상 맨 앞
+        // child.position.set(0, 0, 0.01)
         child.position.set(0, 0, 0.01 + anim.spread * 0.5)
         return
       }
 
-      // 소용돌이 패턴 (뒤로 흩어짐)
-      const angle = index * 0.3
-      const radius = index * 0.006
+      // 세 갈래로 벌어지는 패턴
+      const group = index % 3 // 0: 왼쪽, 1: 중앙, 2: 오른쪽
+      const depthIndex = Math.floor(index / 3)
 
-      const targetX = Math.cos(angle) * radius
-      const targetY = Math.sin(angle) * radius
-      const targetZ = -index * 0.05
+      const xDirection = group === 0 ? -1 : group === 2 ? 1 : 0
+      const targetX = xDirection * depthIndex * 0.008
+      const targetZ = -depthIndex * 0.015
 
       child.position.x = targetX * anim.spread
-      child.position.y = targetY * anim.spread
+      child.position.y = 0
       child.position.z = targetZ * anim.spread
     })
   })

@@ -121,6 +121,7 @@ const config: Config = {
         dropdown: "900",
         modal: "1000",
         toast: "1100",
+        loader: "1200",
       },
 
       /* =========================

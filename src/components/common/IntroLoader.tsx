@@ -40,7 +40,7 @@ export function IntroLoader({ duration = 2000 }: IntroLoaderProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-white flex items-center justify-center transition-opacity duration-500"
+      className="w-full h-full fixed inset-0 z-loader bg-white flex items-center justify-center transition-opacity duration-500"
       style={{ opacity: isLoading ? 1 : 0, pointerEvents: isLoading ? 'auto' : 'none' }}
     >
       <div className="flex flex-col items-center gap-3 relative">

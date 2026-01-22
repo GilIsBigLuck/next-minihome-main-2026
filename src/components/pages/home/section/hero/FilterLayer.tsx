@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { createPortal, useFrame } from '@react-three/fiber'
-import { useFBO, useGLTF, MeshTransmissionMaterial } from '@react-three/drei'
+import { useFBO, useGLTF, MeshTransmissionMaterial, useScroll } from '@react-three/drei'
 import * as THREE from 'three'
 
 import { useNoiseTexture } from '@/hooks/three'
@@ -21,6 +21,10 @@ export function FilterLayer({ children, damping = 0.2 }: FilterLayerProps) {
   const buffer = useFBO()
   const [scene] = useState(() => new THREE.Scene())
   const noiseTexture = useNoiseTexture()
+  const scroll = useScroll()
+
+  const BASE_SCALE = 0.15
+  const MIN_SCALE = 0.04 // 약 200px 정도
 
   useFrame((state) => {
     state.gl.setRenderTarget(buffer)
@@ -29,6 +33,7 @@ export function FilterLayer({ children, damping = 0.2 }: FilterLayerProps) {
     state.gl.setRenderTarget(null)
 
     const time = state.clock.elapsedTime
+    const scrollOffset = scroll.offset
 
     if (materialRef.current) {
       materialRef.current.roughness = 0.3 + Math.sin(time * 1.5) * 0.1
@@ -37,6 +42,13 @@ export function FilterLayer({ children, damping = 0.2 }: FilterLayerProps) {
 
     if (meshRef.current) {
       meshRef.current.rotation.x = Math.sin(time * 1) * 0.1
+      // 스크롤에 따라 메시 축소
+      const scale = BASE_SCALE - (BASE_SCALE - MIN_SCALE) * scrollOffset
+      meshRef.current.scale.setScalar(scale)
+      // 스크롤에 따라 rotation-z 변경 (원형으로)
+      meshRef.current.rotation.x = scrollOffset * (Math.PI / 1)
+      meshRef.current.rotation.y= scrollOffset * (Math.PI / 2)
+      meshRef.current.rotation.z = scrollOffset * (Math.PI / 2)
     }
   })
 
@@ -50,8 +62,9 @@ export function FilterLayer({ children, damping = 0.2 }: FilterLayerProps) {
       <mesh
         ref={meshRef}
         scale={0.15}
-        rotation-x={Math.PI / 2}
-        rotation-y={Math.PI / 2}
+        rotation-x={0}
+        rotation-y={0}
+        rotation-z={0}
         geometry={(nodes as { Cylinder: THREE.Mesh }).Cylinder.geometry}
       >
         <MeshTransmissionMaterial
