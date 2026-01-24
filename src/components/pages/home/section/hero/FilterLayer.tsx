@@ -15,7 +15,7 @@ interface FilterLayerProps {
 
 export function FilterLayer({ children, damping = 0.2 }: FilterLayerProps) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const materialRef = useRef<THREE.MeshPhysicalMaterial>(null)
+  const materialRef = useRef<THREE.MeshPhysicalMaterial & { roughness: number; metalness: number }>(null)
 
   const { nodes } = useGLTF('/3d-assets/filter-layer.glb')
   const buffer = useFBO()
@@ -37,17 +37,16 @@ export function FilterLayer({ children, damping = 0.2 }: FilterLayerProps) {
 
     if (materialRef.current) {
       materialRef.current.roughness = 0.3 + Math.sin(time * 1.5) * 0.1
-      materialRef.current.metalness = 1 + Math.cos(time * 2) * 0.2
+      materialRef.current.metalness = 0.8 + Math.cos(time * 2) * 0.2
     }
 
     if (meshRef.current) {
-      meshRef.current.rotation.x = Math.sin(time * 1) * 0.1
       // 스크롤에 따라 메시 축소
       const scale = BASE_SCALE - (BASE_SCALE - MIN_SCALE) * scrollOffset
       meshRef.current.scale.setScalar(scale)
-      // 스크롤에 따라 rotation-z 변경 (원형으로)
-      meshRef.current.rotation.x = scrollOffset * (Math.PI / 1)
-      meshRef.current.rotation.y= scrollOffset * (Math.PI / 2)
+      // 스크롤에 따라 rotation 변경 (원형으로) + 시간 기반 미세 움직임
+      meshRef.current.rotation.x = scrollOffset * Math.PI + Math.sin(time) * 0.1
+      meshRef.current.rotation.y = scrollOffset * (Math.PI / 2)
       meshRef.current.rotation.z = scrollOffset * (Math.PI / 2)
     }
   })

@@ -5,7 +5,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { Text, useScroll } from '@react-three/drei'
 import * as THREE from 'three'
 
-import { HERO_COLORS, TEXT_COUNT, TEXT_FONT, HERO_ANIMATION } from '@/constants/three/hero.config'
+import { HERO_COLORS, TEXT_COUNT, TEXT_FONT } from '@/constants/three/hero.config'
 
 interface TextConfig {
   position: [number, number, number]
@@ -18,36 +18,25 @@ interface TextLayerProps {
   isLoaded?: boolean
 }
 
-// easeInOutCubic
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
-}
-
 export function TextLayer({ text = 'mini', fontSize = 0.2, isLoaded = false }: TextLayerProps) {
   const groupRef = useRef<THREE.Group>(null)
   const { scene } = useThree()
   const scroll = useScroll()
   const animationRef = useRef({
     spread: 0,
-    phase: 'waiting' as 'waiting' | 'opening' | 'open' | 'closing' | 'closed',
-    phaseTime: 0,
     started: false,
   })
 
   const whiteColor = useMemo(() => new THREE.Color('#ffffff'), [])
   const grayColor = useMemo(() => new THREE.Color('#efefef'), [])
+  const bgColorRef = useRef(new THREE.Color('#ffffff'))
 
   // 로딩 완료되면 애니메이션 시작
   useEffect(() => {
     if (isLoaded && !animationRef.current.started) {
       animationRef.current.started = true
-      animationRef.current.phase = 'closed'
-      animationRef.current.phaseTime = 0
     }
   }, [isLoaded])
-
-  const ANIMATION_DURATION = HERO_ANIMATION.duration
-  const DELAY_DURATION = HERO_ANIMATION.delay
 
   const textConfigs = useMemo<TextConfig[]>(() => {
     return Array.from({ length: TEXT_COUNT }, (_, index) => ({
@@ -76,23 +65,23 @@ export function TextLayer({ text = 'mini', fontSize = 0.2, isLoaded = false }: T
     }
 
     // 배경색 변경: 스크롤에 따라 #efefef로
-    const bgColor = whiteColor.clone().lerp(grayColor, scrollOffset)
-    scene.background = bgColor
+    bgColorRef.current.copy(whiteColor).lerp(grayColor, scrollOffset)
+    scene.background = bgColorRef.current
 
     groupRef.current.children.forEach((child, index) => {
-      if (child instanceof THREE.Group && child.children.length > 0) {
-        const textMesh = child.children[0] as THREE.Mesh
-        if (textMesh && textMesh.material) {
-          const material = textMesh.material as THREE.MeshBasicMaterial
-          if (index === 0) {
-            material.opacity = 1
-            material.transparent = false
-          } else {
-            material.opacity = 0.85
-            material.transparent = true
-          }
-        }
-      }
+      // if (child instanceof THREE.Group && child.children.length > 0) {
+        // const textMesh = child.children[0] as THREE.Mesh
+        // if (textMesh && textMesh.material) {
+          // const material = textMesh.material as THREE.MeshBasicMaterial
+          // if (index === 0) {
+          //   material.opacity = 1
+          //   material.transparent = false
+          // } else {
+          //   material.opacity = 0.85
+          //   material.transparent = true
+          // }
+        // }
+      // }
 
       if (index === 0) {
         // 맨 앞 텍스트: 항상 맨 앞
