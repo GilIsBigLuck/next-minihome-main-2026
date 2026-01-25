@@ -1,6 +1,6 @@
 'use client'
 
-import { HeroCanvas } from './hero'
+import { HomeCanvas } from '../canvas'
 import { useLoading } from '@/contexts/LoadingContext'
 
 export default function HeroSection() {
@@ -8,7 +8,7 @@ export default function HeroSection() {
 
   return (
     <section id="heroSection" className="relative w-full h-screen">
-      <HeroCanvas isLoaded={!isLoading} />
+      <HomeCanvas isLoaded={!isLoading} />
 
       {/* 텍스트 오버레이 */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

@@ -4,16 +4,18 @@ import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ScrollControls, Preload } from '@react-three/drei'
 
-import { HERO_CAMERA, HERO_SCROLL } from '@/constants/three/hero.config'
-import { FilterLayer } from './FilterLayer'
-import { TextLayer } from './TextLayer'
-import { ProjectsSection } from './ProjectsSection'
+import { HERO_CAMERA, HERO_SCROLL } from './hero/hero.config'
+import { FilterLayer } from './hero/FilterLayer'
+import { TextLayer } from './hero/TextLayer'
+import { ProjectsOrbit } from './projects/ProjectsOrbit'
+import { TemplatesSlide } from './templates/TemplatesSlide'
+import { ContactSection } from './contact/ContactSection'
 
-interface HeroCanvasProps {
+interface HomeCanvasProps {
   isLoaded?: boolean
 }
 
-export function HeroCanvas({ isLoaded = false }: HeroCanvasProps) {
+export function HomeCanvas({ isLoaded = false }: HomeCanvasProps) {
   return (
     <Canvas
       camera={{
@@ -30,8 +32,10 @@ export function HeroCanvas({ isLoaded = false }: HeroCanvasProps) {
         >
           <FilterLayer>
             <TextLayer isLoaded={isLoaded} />
+            <ProjectsOrbit />
+            <TemplatesSlide />
+            <ContactSection />
           </FilterLayer>
-          <ProjectsSection />
         </ScrollControls>
         <Preload all />
       </Suspense>

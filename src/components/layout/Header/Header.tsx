@@ -19,11 +19,12 @@ export default function Header() {
         <header className={headerStyles({ variant: 'default' })}>
             <div className={headerInnerStyles()}>
                 <div>
-                    Logo
+                    {/* Logo */}
                 </div>
                 <nav className={headerNavStyles()}>
                     <Link href="/">Home</Link>
-                    <Link href="/about">About</Link>
+                    <Link href="/about">Projects</Link>
+                    <Link href="/about">Templates</Link>
                     <Link href="/contact">Contact</Link>
                 </nav>
             </div>
