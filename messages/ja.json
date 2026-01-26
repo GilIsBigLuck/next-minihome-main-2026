@@ -1,0 +1,10 @@
+{
+  "common": {
+    "welcome": "ようこそ"
+  },
+  "cities": {
+    "seoul": "ソウル",
+    "newyork": "ニューヨーク",
+    "tokyo": "東京"
+  }
+}

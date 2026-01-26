@@ -5,11 +5,11 @@ import { Canvas } from '@react-three/fiber'
 import { ScrollControls, Preload } from '@react-three/drei'
 
 import { HERO_CAMERA, HERO_SCROLL } from './hero/hero.config'
-import { FilterLayer } from './hero/FilterLayer'
-import { TextLayer } from './hero/TextLayer'
-import { ProjectsOrbit } from './projects/ProjectsOrbit'
-import { TemplatesSlide } from './templates/TemplatesSlide'
-import { ContactSection } from './contact/ContactSection'
+import { FilterLayer } from '@/components/pages/home/canvas/hero/FilterLayer'
+import { TextLayer } from '@/components/pages/home/canvas/hero/TextLayer'
+import { ProjectsOrbit } from '@/components/pages/home/canvas/projects/ProjectsOrbit'
+import { TemplatesSlide } from '@/components/pages/home/canvas/templates/TemplatesSlide'
+import { ContactSection } from '@/components/pages/home/canvas/contact/ContactSection'
 
 interface HomeCanvasProps {
   isLoaded?: boolean

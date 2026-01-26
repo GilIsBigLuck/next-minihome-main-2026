@@ -66,8 +66,8 @@ const config: Config = {
        * ========================= */
       fontFamily: {
         display: ["var(--font-rubik)", "sans-serif"],
-        body: ["var(--font-noto-sans-kr)", "var(--font-inter)", "sans-serif"],
-        sans: ["var(--font-noto-sans-kr)", "var(--font-inter)", "sans-serif"],
+        body: ["Rubik","var(--font-noto-sans-kr)", "sans-serif"],
+        sans: ["Rubik", "var(--font-noto-sans-kr)", "sans-serif"],
       },
 
       /* =========================
@@ -147,7 +147,42 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }: { addUtilities: any }) {
+      addUtilities({
+        '.bg-blur': {
+          'background-color': 'rgba(255, 255, 255, 0.1)',
+          'backdrop-filter': 'blur(50px)',
+          '-webkit-backdrop-filter': 'blur(50px)',
+        },
+        '.bg-blur-sm': {
+          'background-color': 'rgba(255, 255, 255, 0.05)',
+          'backdrop-filter': 'blur(4px)',
+          '-webkit-backdrop-filter': 'blur(4px)',
+        },
+        '.bg-blur-md': {
+          'background-color': 'rgba(255, 255, 255, 0.1)',
+          'backdrop-filter': 'blur(10px)',
+          '-webkit-backdrop-filter': 'blur(10px)',
+        },
+        '.bg-blur-lg': {
+          'background-color': 'rgba(255, 255, 255, 0.15)',
+          'backdrop-filter': 'blur(16px)',
+          '-webkit-backdrop-filter': 'blur(16px)',
+        },
+        '.bg-blur-dark': {
+          'background-color': 'rgba(0, 0, 0, 0.1)',
+          'backdrop-filter': 'blur(10px)',
+          '-webkit-backdrop-filter': 'blur(10px)',
+        },
+        '.bg-blur-dark-md': {
+          'background-color': 'rgba(0, 0, 0, 0.15)',
+          'backdrop-filter': 'blur(16px)',
+          '-webkit-backdrop-filter': 'blur(16px)',
+        },
+      });
+    },
+  ],
 };
 
 export default config;
