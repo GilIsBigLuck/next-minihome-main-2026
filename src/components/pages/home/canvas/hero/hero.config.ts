@@ -15,7 +15,7 @@ export const TEXT_FONT = '/fonts/Rubik-Black.ttf'
 
 export const HERO_CAMERA = {
   position: [0, 0, 5] as [number, number, number],
-  fov: 6,
+  fov: 5,
 } as const
 
 export const HERO_SCROLL = {

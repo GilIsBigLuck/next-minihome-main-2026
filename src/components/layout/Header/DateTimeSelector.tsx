@@ -34,6 +34,7 @@ export default function DateTimeSelector() {
     const { startLoading, finishLoading } = useLoading()
     const [currentCity, setCurrentCity] = useState<CityKey>('seoul')
     const [currentDateTime, setCurrentDateTime] = useState<string>('')
+    const [shortDateTime, setShortDateTime] = useState<string>('')
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const previousLocaleRef = useRef<string>('')
 
@@ -83,6 +84,8 @@ export default function DateTimeSelector() {
             
             // 2026.01.26 12:24:23 PM 형식
             setCurrentDateTime(`${year}.${month}.${day} ${hour}:${minute}:${second} ${dayPeriod}`)
+            // 모바일용 짧은 형식: 12:24 PM
+            setShortDateTime(`${hour}:${minute} ${dayPeriod}`)
         }
 
         updateDateTime()
@@ -105,16 +108,17 @@ export default function DateTimeSelector() {
     }
 
     return (
-        <div className="relative w-64">
-            
+        <div className="relative">
+
             <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 bg-blur"
+                className="flex items-center gap-1 md:gap-2 bg-blur"
             >
-                <span className="font-bold">{t(cityConfig[currentCity].nameKey)}</span>
-                <span className="text-sm">{currentDateTime}</span>
+                <span className="font-bold text-sm md:text-base">{t(cityConfig[currentCity].nameKey)}</span>
+                <span className="text-xs md:text-sm hidden sm:inline">{currentDateTime}</span>
+                <span className="text-xs sm:hidden">{shortDateTime}</span>
                 <svg
-                    className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`w-3 h-3 md:w-4 md:h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -129,7 +133,7 @@ export default function DateTimeSelector() {
                         className="fixed inset-0 z-10"
                         onClick={() => setIsDropdownOpen(false)}
                     />
-                    <div className="absolute top-full right-0 mt-2 w-48 bg-white shadow-lg border border-white/20 z-20">
+                    <div className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg border border-white/20 z-20">
                         {(Object.keys(cityConfig) as CityKey[]).map((city) => {
                             const config = cityConfig[city]
                             return (

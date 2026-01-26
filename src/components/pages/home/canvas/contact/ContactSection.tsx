@@ -82,7 +82,7 @@ const ContactForm = memo(function ContactForm({ opacity }: { opacity: number }) 
 
   return (
     <div
-      className="w-[480px] bg-white shadow-2xl p-8"
+      className="w-[calc(100vw-40px)] max-w-[480px] bg-white shadow-2xl p-6 md:p-8"
       style={{
         opacity,
         transition: 'opacity 0.3s ease',
