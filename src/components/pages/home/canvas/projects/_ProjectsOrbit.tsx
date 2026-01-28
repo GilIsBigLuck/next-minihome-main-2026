@@ -1,11 +1,12 @@
 'use client'
 
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Image, useScroll } from '@react-three/drei'
 import * as THREE from 'three'
 
-import { PROJECT_IMAGES, PROJECTS_SCROLL, PROJECTS_ORBIT } from './projects.config'
+import { PROJECTS, PROJECTS_SCROLL, PROJECTS_ORBIT } from './projects.config'
+import { useProjectModal } from '@/contexts/ProjectModalContext'
 
 interface ProjectItem {
   id: number
@@ -13,16 +14,65 @@ interface ProjectItem {
   baseAngle: number
 }
 
+interface ProjectImageProps {
+  project: ProjectItem
+  isHovered: boolean
+  onHover: (id: number | null) => void
+  onClick: () => void
+  groupRef: (el: THREE.Group | null) => void
+}
+
+function ProjectImage({ project, isHovered, onHover, onClick, groupRef }: ProjectImageProps) {
+  const meshRef = useRef<THREE.Mesh>(null)
+  const currentScale = useRef({ x: PROJECTS_ORBIT.imageScale[0], y: PROJECTS_ORBIT.imageScale[1] })
+
+  useFrame((_, delta) => {
+    if (!meshRef.current) return
+
+    const targetX = isHovered ? PROJECTS_ORBIT.imageScale[0] * 1.15 : PROJECTS_ORBIT.imageScale[0]
+    const targetY = isHovered ? PROJECTS_ORBIT.imageScale[1] * 1.15 : PROJECTS_ORBIT.imageScale[1]
+
+    const lerpSpeed = 8
+    currentScale.current.x += (targetX - currentScale.current.x) * lerpSpeed * delta
+    currentScale.current.y += (targetY - currentScale.current.y) * lerpSpeed * delta
+
+    meshRef.current.scale.set(currentScale.current.x, currentScale.current.y, 1)
+  })
+
+  return (
+    <group ref={groupRef} position={[0, 0, 0]}>
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <Image
+        ref={meshRef}
+        url={project.image}
+        scale={PROJECTS_ORBIT.imageScale}
+        transparent
+        onClick={onClick}
+        onPointerOver={() => {
+          document.body.style.cursor = 'pointer'
+          onHover(project.id)
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = 'auto'
+          onHover(null)
+        }}
+      />
+    </group>
+  )
+}
+
 export function ProjectsOrbit() {
   const groupRef = useRef<THREE.Group>(null)
   const projectRefs = useRef<(THREE.Group | null)[]>([])
   const scroll = useScroll()
+  const { openModal } = useProjectModal()
+  const [hoveredId, setHoveredId] = useState<number | null>(null)
 
   const projects = useMemo<ProjectItem[]>(() => {
-    return PROJECT_IMAGES.map((img, index) => ({
-      id: index,
-      image: img,
-      baseAngle: (index / PROJECT_IMAGES.length) * Math.PI * 2,
+    return PROJECTS.map((project, index) => ({
+      id: project.id,
+      image: project.image,
+      baseAngle: (index / PROJECTS.length) * Math.PI * 2,
     }))
   }, [])
 
@@ -83,20 +133,16 @@ export function ProjectsOrbit() {
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
       {projects.map((project, index) => (
-        <group
+        <ProjectImage
           key={project.id}
-          ref={(el) => {
+          project={project}
+          isHovered={hoveredId === project.id}
+          onHover={setHoveredId}
+          onClick={() => openModal(project.id)}
+          groupRef={(el) => {
             projectRefs.current[index] = el
           }}
-          position={[0, 0, 0]}
-        >
-{/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <Image
-            url={project.image}
-            scale={PROJECTS_ORBIT.imageScale}
-            transparent
-          />
-        </group>
+        />
       ))}
     </group>
   )

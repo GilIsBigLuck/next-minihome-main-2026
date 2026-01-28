@@ -1,1 +1,1 @@
-export { ProjectsOrbit } from './ProjectsOrbit'
+export { ProjectsHorizontal } from './ProjectsHorizontal'

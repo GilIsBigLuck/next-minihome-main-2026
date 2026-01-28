@@ -1,11 +1,46 @@
 'use client'
 
+/**
+ * ContactSection - 컨택트 폼 섹션
+ *
+ * Three.js / R3F / drei 핵심:
+ *   - <Text>: drei의 SDF 텍스트 (troika-three-text 기반). 3D 공간에 고품질 텍스트 렌더링
+ *   - <Html>: 3D 씬 안에 실제 DOM 요소를 삽입하는 drei 컴포넌트
+ *     - center: 3D 위치 기준 중앙 정렬
+ *     - transform: CSS transform 대신 Three.js Object3D.matrix로 위치/크기 제어
+ *     - scale: Html 컨테이너의 3D 스케일 (world 단위 → CSS 픽셀 변환 비율)
+ *     - prepend: DOM 요소를 Canvas 뒤가 아닌 앞에 배치 (z-index 관련)
+ *   - useScroll(): 스크롤 진행도로 텍스트/폼의 등장 타이밍 제어
+ *   - material.opacity + material.transparent: 텍스트 페이드 인 효과
+ */
+
 import { memo, useRef, useState } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { Html, Text, useScroll } from '@react-three/drei'
 import * as THREE from 'three'
 
 import { CONTACT_SCROLL, CONTACT_TEXT } from './contact.config'
+
+/**
+ * useResponsiveHtmlScale - FOV 변화에 따른 Html 스케일 보정 훅
+ *
+ * 문제: ResponsiveCamera가 뷰포트별로 FOV를 변경하면,
+ *   동일한 scale 값의 Html이 서로 다른 크기로 보임.
+ *   (FOV가 클수록 더 넓은 영역을 보므로 상대적으로 작아짐)
+ *
+ * 해결: FOV가 큰 뷰포트에서 scale을 크게 설정하여 시각적 크기 유지
+ *   - 모바일 (FOV 10): scale 0.04
+ *   - 태블릿 (FOV 10): scale 0.04
+ *   - 노트북 (FOV 7):  scale 0.028
+ *   - 데스크톱 (FOV 5): scale 0.02
+ */
+function useResponsiveHtmlScale() {
+  const { size } = useThree()
+  if (size.width < 640) return 0.04
+  if (size.width < 1024) return 0.04
+  if (size.width < 1200) return 0.028
+  return 0.02
+}
 
 const ContactForm = memo(function ContactForm({ opacity }: { opacity: number }) {
   const [formData, setFormData] = useState({
@@ -208,19 +243,28 @@ const ContactForm = memo(function ContactForm({ opacity }: { opacity: number }) 
   )
 })
 
+/**
+ * ContactSection - 컨택트 텍스트 + 폼 컨테이너
+ *
+ * 스크롤 구간별 동작:
+ *   - 0.86~: "CONTACT" 텍스트 페이드 인
+ *   - 0.95~1.0: 컨택트 폼 페이드 인 (Html 컴포넌트)
+ */
 export function ContactSection() {
   const groupRef = useRef<THREE.Group>(null)
   const textRef = useRef<THREE.Mesh>(null)
   const scroll = useScroll()
   const [textVisible, setTextVisible] = useState(false)
   const [formOpacity, setFormOpacity] = useState(0)
+  /** FOV 보정된 Html scale */
+  const htmlScale = useResponsiveHtmlScale()
 
   useFrame(() => {
     if (!groupRef.current) return
 
     const scrollOffset = scroll.offset
 
-    // Text visibility & fade in (0.86 ~)
+    // 텍스트 진행도: CONTACT_SCROLL.startOffset(0.86) ~ fullOffset(1.0)
     const isInRange = scrollOffset >= CONTACT_SCROLL.startOffset
     const textProgress = Math.max(
       0,
@@ -228,7 +272,7 @@ export function ContactSection() {
     )
     const shouldShowText = isInRange && textProgress > 0.1
 
-    // Form visibility (0.95 ~ 1.0)
+    // 폼 진행도: formStartOffset(0.95) ~ fullOffset(1.0)
     const formProgress = Math.max(
       0,
       Math.min(1, (scrollOffset - CONTACT_SCROLL.formStartOffset) / (CONTACT_SCROLL.fullOffset - CONTACT_SCROLL.formStartOffset))
@@ -242,9 +286,10 @@ export function ContactSection() {
       setFormOpacity(formProgress)
     }
 
+    // group.visible: 구간 밖에서는 렌더링 제외 (성능 최적화)
     groupRef.current.visible = shouldShowText
 
-    // Text fade in
+    // material.opacity로 텍스트 페이드 인 (transparent=true 필수)
     if (textRef.current && textRef.current.material) {
       const material = textRef.current.material as THREE.MeshBasicMaterial
       material.opacity = textProgress
@@ -254,6 +299,12 @@ export function ContactSection() {
 
   return (
     <group ref={groupRef} position={[0, 0, 0.5]}>
+      {/*
+        drei <Text>: troika-three-text 기반 SDF 텍스트 렌더링
+        - letterSpacing: 자간 (em 단위, 0.1 = 10%)
+        - anchorX/Y: "center" = 중앙 기준점
+        - z=-0.1: 폼보다 약간 뒤에 배치
+      */}
       <Text
         ref={textRef}
         position={[0, 0, -0.1]}
@@ -267,11 +318,19 @@ export function ContactSection() {
         CONTACT
       </Text>
 
+      {/*
+        drei <Html>: 3D 씬 안에 DOM 삽입
+        - center: 3D 좌표 기준 중앙 정렬
+        - transform: Three.js의 Object3D matrix로 위치/크기 제어
+        - scale: 3D world 단위 → CSS 픽셀 변환 비율 (FOV에 따라 보정)
+        - prepend: Canvas DOM 앞에 배치하여 인터랙션 가능
+        - formOpacity > 0 조건부 렌더링: 불필요한 DOM 삽입 방지
+      */}
       {formOpacity > 0 && (
         <Html
           center
           transform
-          scale={0.02}
+          scale={htmlScale}
           prepend
         >
           <ContactForm opacity={formOpacity} />

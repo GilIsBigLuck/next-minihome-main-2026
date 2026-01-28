@@ -4,7 +4,11 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { LoadingProvider } from '@/contexts/LoadingContext';
+import { TemplateModalProvider } from '@/contexts/TemplateModalContext';
+import { ProjectModalProvider } from '@/contexts/ProjectModalContext';
 import { IntroLoader } from '@/components/common/IntroLoader';
+import { TemplateModal } from '@/components/modals/TemplateModal';
+import { ProjectModal } from '@/components/modals/ProjectModal';
 import Header from '@/components/layout/Header/Header';
 
 import "./globals.css";
@@ -40,13 +44,19 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <LoadingProvider>
-          <NextIntlClientProvider messages={messages}>
-            <IntroLoader />
-            <Header />
-            <main>
-              {children}
-            </main>
-          </NextIntlClientProvider>
+          <TemplateModalProvider>
+            <ProjectModalProvider>
+              <NextIntlClientProvider messages={messages}>
+                <IntroLoader />
+                <Header />
+                <main>
+                  {children}
+                </main>
+                <TemplateModal />
+                <ProjectModal />
+              </NextIntlClientProvider>
+            </ProjectModalProvider>
+          </TemplateModalProvider>
         </LoadingProvider>
       </body>
     </html>

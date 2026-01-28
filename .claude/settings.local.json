@@ -5,7 +5,9 @@
       "Bash(curl:*)",
       "Bash(cat:*)",
       "Bash(npm install:*)",
-      "Skill(react-best-practices)"
+      "Skill(react-best-practices)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next build:*)"
     ]
   }
 }

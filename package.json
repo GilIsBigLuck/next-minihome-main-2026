@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
     "@react-email/render": "^2.0.4",
     "@react-three/drei": "^9.88.0",
     "@react-three/fiber": "^8.18.0",

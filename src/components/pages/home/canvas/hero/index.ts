@@ -1,2 +1,2 @@
-export { FilterLayer } from './FilterLayer'
+export { FilterLayer } from '../FilterLayer'
 export { TextLayer } from './TextLayer'

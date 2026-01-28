@@ -180,6 +180,9 @@ const config: Config = {
           'backdrop-filter': 'blur(16px)',
           '-webkit-backdrop-filter': 'blur(16px)',
         },
+        '.mix-blend-difference': {
+          'mix-blend-mode': 'difference',
+        },
       });
     },
   ],

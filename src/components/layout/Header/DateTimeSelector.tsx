@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslations, useLocale } from 'next-intl'
 import { useRouter, usePathname } from '@/i18n/routing'
 import { useLoading } from '@/contexts/LoadingContext'
@@ -36,6 +37,8 @@ export default function DateTimeSelector() {
     const [currentDateTime, setCurrentDateTime] = useState<string>('')
     const [shortDateTime, setShortDateTime] = useState<string>('')
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
+    const buttonRef = useRef<HTMLButtonElement>(null)
     const previousLocaleRef = useRef<string>('')
 
     useEffect(() => {
@@ -107,16 +110,73 @@ export default function DateTimeSelector() {
         }
     }
 
+    useEffect(() => {
+        const updateDropdownPosition = () => {
+            if (buttonRef.current && isDropdownOpen) {
+                const rect = buttonRef.current.getBoundingClientRect()
+                setDropdownPosition({
+                    top: rect.bottom + window.scrollY + 8, // 8px = mt-2
+                    left: rect.left + window.scrollX,
+                })
+            }
+        }
+
+        if (isDropdownOpen) {
+            updateDropdownPosition()
+            window.addEventListener('scroll', updateDropdownPosition, true)
+            window.addEventListener('resize', updateDropdownPosition)
+        }
+
+        return () => {
+            window.removeEventListener('scroll', updateDropdownPosition, true)
+            window.removeEventListener('resize', updateDropdownPosition)
+        }
+    }, [isDropdownOpen])
+
+    const dropdownContent = isDropdownOpen && (
+        <>
+            <div
+                className="fixed inset-0 z-[800]"
+                onClick={() => setIsDropdownOpen(false)}
+            />
+            <div 
+                className="fixed w-48 bg-white shadow-lg border border-gray-200 z-[900]"
+                style={{
+                    top: `${dropdownPosition.top}px`,
+                    left: `${dropdownPosition.left}px`,
+                }}
+            >
+                {(Object.keys(cityConfig) as CityKey[]).map((city) => {
+                    const config = cityConfig[city]
+                    return (
+                        <button
+                            key={city}
+                            onClick={() => handleCityChange(city)}
+                            className="w-full text-left px-4 py-2 transition-colors text-black hover:bg-gray-50"
+                        >
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm">{t(config.nameKey)}</span>
+                                <span className="text-sm text-gray-500">
+                                    {config.locale.toUpperCase()}
+                                </span>
+                            </div>
+                        </button>
+                    )
+                })}
+            </div>
+        </>
+    )
+
     return (
         <div className="relative">
-
             <button
+                ref={buttonRef}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-1 md:gap-2 bg-blur"
+                className="flex items-center gap-1 md:gap-2"
             >
-                <span className="font-bold text-sm md:text-base">{t(cityConfig[currentCity].nameKey)}</span>
-                <span className="text-xs md:text-sm hidden sm:inline">{currentDateTime}</span>
-                <span className="text-xs sm:hidden">{shortDateTime}</span>
+                <span className="text-sm">{t(cityConfig[currentCity].nameKey)}</span>
+                <span className="text-sm hidden sm:inline">{currentDateTime}</span>
+                <span className="text-sm sm:hidden">{shortDateTime}</span>
                 <svg
                     className={`w-3 h-3 md:w-4 md:h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                     fill="none"
@@ -127,35 +187,7 @@ export default function DateTimeSelector() {
                 </svg>
             </button>
             
-            {isDropdownOpen && (
-                <>
-                    <div
-                        className="fixed inset-0 z-10"
-                        onClick={() => setIsDropdownOpen(false)}
-                    />
-                    <div className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg border border-white/20 z-20">
-                        {(Object.keys(cityConfig) as CityKey[]).map((city) => {
-                            const config = cityConfig[city]
-                            return (
-                                <button
-                                    key={city}
-                                    onClick={() => handleCityChange(city)}
-                                    className={`w-full text-left px-4 py-2 bg-blur transition-colors ${
-                                        currentCity === city ? 'bg-blur-md font-bold' : ''
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-bold">{t(config.nameKey)}</span>
-                                        <span className="text-xs text-gray-500 font-bold">
-                                            {config.locale.toUpperCase()}
-                                        </span>
-                                    </div>
-                                </button>
-                            )
-                        })}
-                    </div>
-                </>
-            )}
+            {typeof window !== 'undefined' && createPortal(dropdownContent, document.body)}
         </div>
     )
 }
