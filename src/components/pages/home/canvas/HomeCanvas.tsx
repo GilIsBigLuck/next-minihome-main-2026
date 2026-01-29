@@ -89,7 +89,7 @@ export function HomeCanvas({ isLoaded = false }: HomeCanvasProps) {
           >
             <FilterLayer>
               <TextLayer isLoaded={isLoaded} />
-              <ProjectsHorizontal />
+              {/* <ProjectsHorizontal /> */}
               <TemplatesSlide />
               <ContactSection />
             </FilterLayer>

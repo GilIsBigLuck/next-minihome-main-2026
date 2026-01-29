@@ -3,7 +3,7 @@ import { cva } from 'class-variance-authority'
 
 import { HomeCanvas } from '@/components/pages/home/canvas'
 import { useLoading } from '@/contexts/LoadingContext'
-import { HeroSection } from '@/components/pages/home/section/HeroSection'
+import { HeroSection, IntroSection, ProjectSection } from '@/components/pages/home/section'
 
 const homePageSt = cva('relative w-full h-screen');
 
@@ -24,6 +24,8 @@ export default function HomePage() {
       {/* Section Wrapper */}
       <div className="section-wrap w-full overflow-hidden">
         <HeroSection />
+        <IntroSection />
+        {/* <ProjectSection /> */}
       </div>
 
       {/* 텍스트 오버레이 */}
