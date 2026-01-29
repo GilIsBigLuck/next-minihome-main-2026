@@ -21,7 +21,6 @@ const navLinkStyles = cva('transition-colors text-sm')
 
 const logoStyles = cva('text-sm absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2')
 
-
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const headerRef = useRef<HTMLElement>(null)
@@ -88,7 +87,7 @@ export default function Header() {
                     <DateTimeSelector />
 
                     <div>
-                        <Link href="/" className={logoStyles()}>www.minihome.page</Link>
+                        <Link href="/" className={logoStyles()}>minihome.page</Link>
                     </div>
 
                     {/* Desktop Nav */}

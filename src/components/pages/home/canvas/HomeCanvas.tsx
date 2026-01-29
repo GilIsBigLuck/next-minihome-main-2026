@@ -73,29 +73,30 @@ interface HomeCanvasProps {
  */
 export function HomeCanvas({ isLoaded = false }: HomeCanvasProps) {
   return (
-    <Canvas
-      camera={{
-        position: HOME_CANVAS_CAMERA.position,
-        fov: HOME_CANVAS_CAMERA.fov,
-      }}
-      className="w-full h-full"
-    >
-      <ResponsiveCamera />
-      <Suspense fallback={null}>
-        <ScrollControls
-          damping={HOME_CANVAS_SCROLL.damping}
-          pages={HOME_CANVAS_SCROLL.pages}
-          distance={HOME_CANVAS_SCROLL.distance}
-        >
-          <FilterLayer>
-            <TextLayer isLoaded={isLoaded} />
-            <ProjectsHorizontal />
-            <TemplatesSlide />
-            <ContactSection />
-          </FilterLayer>
-        </ScrollControls>
-        <Preload all />
-      </Suspense>
-    </Canvas>
+    <div id="homeCanvas" className="w-full h-full fixed top-0 left-0 z-canvas">
+      <Canvas
+        camera={{
+          position: HOME_CANVAS_CAMERA.position,
+          fov: HOME_CANVAS_CAMERA.fov,
+        }}
+      >
+        <ResponsiveCamera />
+        <Suspense fallback={null}>
+          <ScrollControls
+            damping={HOME_CANVAS_SCROLL.damping}
+            pages={HOME_CANVAS_SCROLL.pages}
+            distance={HOME_CANVAS_SCROLL.distance}
+          >
+            <FilterLayer>
+              <TextLayer isLoaded={isLoaded} />
+              <ProjectsHorizontal />
+              <TemplatesSlide />
+              <ContactSection />
+            </FilterLayer>
+          </ScrollControls>
+          <Preload all />
+        </Suspense>
+      </Canvas>
+    </div>
   )
 }

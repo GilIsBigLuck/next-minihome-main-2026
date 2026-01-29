@@ -122,6 +122,9 @@ const config: Config = {
         modal: "1000",
         toast: "1100",
         loader: "1200",
+        canvas: "1",
+        frontToCanvas: "2",
+        backToCanvas: "0",
       },
 
       /* =========================
@@ -136,6 +139,14 @@ const config: Config = {
           "0%": { transform: "translateY(20px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        'marquee-reverse': {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
       },
 
       /* =========================
@@ -144,6 +155,8 @@ const config: Config = {
       animation: {
         fadeIn: "fadeIn 0.5s ease-out",
         slideUp: "slideUp 0.6s ease-out forwards",
+        marquee: "marquee 200s linear infinite",
+        'marquee-reverse': "marquee-reverse 200s linear infinite",
       },
     },
   },
